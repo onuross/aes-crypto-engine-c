@@ -21,7 +21,7 @@ A standalone, zero-dependency C99 implementation of the **Advanced Encryption St
 AES (Rijndael) is a substitution-permutation network (SPN) that operates on a 128-bit (16-byte) data block organized as a column-major state matrix over the finite Galois Field $GF(2^8)$:
 
 $$
-\mathbf{S} \in GF(2^8)^{4 \times 4}, \quad \mathbf{S} = \begin{bmatrix} s_{0,0} & s_{0,1} & s_{0,2} & s_{0,3} \\ s_{1,0} & s_{1,1} & s_{1,2} & s_{1,3} \\ s_{2,0} & s_{2,1} & s_{2,2} & s_{2,3} \\ s_{3,0} & s_{3,1} & s_{3,2} & s_{3,3} \end{bmatrix}, \quad s_{r,c} = \text{block}[r + 4c]
+\mathbf{S} \in GF(2^8)^{4 \times 4}, \quad \mathbf{S} = \begin{bmatrix} s_{0,0} & s_{0,1} & s_{0,2} & s_{0,3} \\\\ s_{1,0} & s_{1,1} & s_{1,2} & s_{1,3} \\\\ s_{2,0} & s_{2,1} & s_{2,2} & s_{2,3} \\\\ s_{3,0} & s_{3,1} & s_{3,2} & s_{3,3} \end{bmatrix}, \quad s_{r,c} = \text{block}[r + 4c]
 $$
 
 ### 1. Finite Field $GF(2^8)$ Arithmetic & Polynomial Reduction
@@ -48,10 +48,10 @@ Higher-order field multiplications required for `MixColumns` and `InvMixColumns`
 
 $$
 \begin{aligned}
-\text{0x03} \otimes b &= \text{xtime}(b) \oplus b \\
-\text{0x09} \otimes b &= \text{xtime}^3(b) \oplus b \\
-\text{0x0b} \otimes b &= \text{xtime}^3(b) \oplus \text{xtime}(b) \oplus b \\
-\text{0x0d} \otimes b &= \text{xtime}^3(b) \oplus \text{xtime}^2(b) \oplus b \\
+\text{0x03} \otimes b &= \text{xtime}(b) \oplus b \\\\
+\text{0x09} \otimes b &= \text{xtime}^3(b) \oplus b \\\\
+\text{0x0b} \otimes b &= \text{xtime}^3(b) \oplus \text{xtime}(b) \oplus b \\\\
+\text{0x0d} \otimes b &= \text{xtime}^3(b) \oplus \text{xtime}^2(b) \oplus b \\\\
 \text{0x0e} \otimes b &= \text{xtime}^3(b) \oplus \text{xtime}^2(b) \oplus \text{xtime}(b)
 \end{aligned}
 $$
@@ -75,7 +75,7 @@ $$
 * **`mix_columns()` & `inv_mix_columns()`:** Treats each column $\mathbf{s}_c$ as a four-term polynomial over $GF(2^8)$ and multiplies it modulo $x^4 + 1$ by a fixed circulant **Maximum Distance Separable (MDS)** matrix:
 
 $$
-\underbrace{\begin{bmatrix} \hat{s}_{0,c} \\ \hat{s}_{1,c} \\ \hat{s}_{2,c} \\ \hat{s}_{3,c} \end{bmatrix} = \begin{bmatrix} 02 & 03 & 01 & 01 \\ 01 & 02 & 03 & 01 \\ 01 & 01 & 02 & 03 \\ 03 & 01 & 01 & 02 \end{bmatrix} \begin{bmatrix} s_{0,c} \\ s_{1,c} \\ s_{2,c} \\ s_{3,c} \end{bmatrix}}_{\text{Forward MixColumns}}, \qquad \underbrace{\begin{bmatrix} s_{0,c} \\ s_{1,c} \\ s_{2,c} \\ s_{3,c} \end{bmatrix} = \begin{bmatrix} 0\text{e} & 0\text{b} & 0\text{d} & 09 \\ 09 & 0\text{e} & 0\text{b} & 0\text{d} \\ 0\text{d} & 09 & 0\text{e} & 0\text{b} \\ 0\text{b} & 0\text{d} & 09 & 0\text{e} \end{bmatrix} \begin{bmatrix} \hat{s}_{0,c} \\ \hat{s}_{1,c} \\ \hat{s}_{2,c} \\ \hat{s}_{3,c} \end{bmatrix}}_{\text{Inverse MixColumns}}
+\underbrace{\begin{bmatrix} \hat{s}_{0,c} \\\\ \hat{s}_{1,c} \\\\ \hat{s}_{2,c} \\\\ \hat{s}_{3,c} \end{bmatrix} = \begin{bmatrix} 02 & 03 & 01 & 01 \\\\ 01 & 02 & 03 & 01 \\\\ 01 & 01 & 02 & 03 \\\\ 03 & 01 & 01 & 02 \end{bmatrix} \begin{bmatrix} s_{0,c} \\\\ s_{1,c} \\\\ s_{2,c} \\\\ s_{3,c} \end{bmatrix}}_{\text{Forward MixColumns}}, \qquad \underbrace{\begin{bmatrix} s_{0,c} \\\\ s_{1,c} \\\\ s_{2,c} \\\\ s_{3,c} \end{bmatrix} = \begin{bmatrix} 0\text{e} & 0\text{b} & 0\text{d} & 09 \\\\ 09 & 0\text{e} & 0\text{b} & 0\text{d} \\\\ 0\text{d} & 09 & 0\text{e} & 0\text{b} \\\\ 0\text{b} & 0\text{d} & 09 & 0\text{e} \end{bmatrix} \begin{bmatrix} \hat{s}_{0,c} \\\\ \hat{s}_{1,c} \\\\ \hat{s}_{2,c} \\\\ \hat{s}_{3,c} \end{bmatrix}}_{\text{Inverse MixColumns}}
 $$
 
 > **Algorithmic Implementation Note (Circulant Vector Rotation):** Rather than hardcoding scalar element-by-element equations, `mix_columns()` and `inv_mix_columns()` precompute the full-state scalar multiples ($2\mathbf{S}, 3\mathbf{S}$ for encryption; $9\mathbf{S}, 11\mathbf{S}, 13\mathbf{S}, 14\mathbf{S}$ for decryption) and exploit the circulant structure of the MDS matrix by cyclically right-shifting the 4-element polynomial coefficient vector (`{2, 3, 1, 1}` or `{14, 11, 13, 9}`) via `shift_one_right()` across each row evaluation.
