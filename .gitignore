@@ -1,0 +1,25 @@
+# Compiled Object Files & Libraries
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+
+# Build Directories & Executables
+build/
+bin/
+aes_demo
+test_runner
+
+# macOS Specific Artifacts & Debug Symbols
+.DS_Store
+.AppleDouble
+.LSOverride
+*.dSYM/
+
+# IDE & Editor Directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
